@@ -23,7 +23,7 @@ class OffRoadDemoApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Offroad Semantic Scene Segmentation")
-        self.root.state('zoomed') # Fullscreen window
+        self.root.state('normal') # Fullscreen window
         
         # Backend Init
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
