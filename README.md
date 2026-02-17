@@ -1,134 +1,173 @@
+
+---
+
 # Offroad Semantic Scene Segmentation 🚙💨
 
-
-> **Codezen2.0 Submission 2026**  
-> *Robust Terrain Analysis using DINOv2 Backbone & PSD-Net*
+> **Codezen2.0 Submission 2026**
+> *Off-road Autonomy via Synthetic Data and Robust Semantic Segmentation*
 
 ![Project Banner](Visual_Report/Visual_Report_V3_0.png)
 
 ## 🚧 Problem Statement
-Standard autonomous driving models rely on lane markings and road signs. In unstructured off-road environments, these features don't exist. A UGV (Unmanned Ground Vehicle) needs to differentiate between **Drivable Terrain** (Short Grass, Dirt) and **Non-Drivable Obstacles** (Trees, Rocks, Deep Water). This project solves this by using Semantic Segmentation to classify every pixel of the scene.
+
+Autonomous systems perform well in structured road environments due to clear cues like lane markings and traffic signs. In off-road settings, these cues are absent. Unmanned Ground Vehicles (UGVs) must instead rely on dense scene understanding to reason about terrain safety.
+
+The goal of this project is to train a **semantic scene segmentation model** that classifies every pixel in an off-road environment into meaningful terrain categories. This enables UGVs to distinguish **drivable regions** such as dirt and short grass from **non-drivable obstacles** including trees, rocks, logs, and water, which is critical for safe navigation and path planning.
 
 ## 💻 Tech Stack
-*   **Core Framework**: PyTorch
-*   **Model Backbone**: DINOv2 (Vision Transformer by Meta)
-*   **Augmentation**: Albumentations (RandomCrop, Flip, ColorJitter)
-*   **Data Handling**: NumPy, Pillow
-*   **Application**: Tkinter (GUI), Matplotlib (Visualization)
+
+* **Core Framework**: PyTorch
+* **Backbone Architecture**: DINOv2 (Vision Transformer)
+* **Data Augmentation**: Albumentations
+* **Data Processing**: NumPy, Pillow
+* **Visualization & Demo**: Tkinter, Matplotlib
 
 ## 📌 Overview
-Self-driving cars are great on highways, but off-road environments are a nightmare. There are no lane markings, no stop signs, and "drivable path" is distinct from "tall grass" or "mud". 
 
-**Offroad Semantic Scene Segmentation** is a system designed specifically for Unmanned Ground Vehicles (UGVs) operating in unstructured environments. It helps robots distinguish between **safe terrain** (dry grass, dirt) and **obstacles** (rocks, trees, deep water).
+This project is developed as part of the **Duality AI Offroad Autonomy Segmentation Challenge**, which focuses on training robust perception models using **synthetic data generated from digital twin environments**.
 
-## 🧠 Model Architecture: The "Vision Transformer" Advantage
+The dataset consists of annotated off-road scenes simulated using Duality AI’s digital twin platform. These environments are designed to mimic real-world desert and off-road conditions while enabling controlled variation in terrain, lighting, and environmental factors.
 
-We didn't just train a standard U-Net. We used **Transfer Learning** with a state-of-the-art backbone.
+The objective is not only to achieve high segmentation accuracy on known scenes, but also to **evaluate generalization** on novel yet similar environments, reflecting real-world deployment challenges in off-road autonomy.
 
-### 1. The Backbone: DINOv2 (ViT-Small)
-Instead of starting from scratch (which requires millions of images), we used Meta's **DINOv2** (Vision Transformer). 
-*   **Why?** DINOv2 understands texture and depth implicitly. It knows what "vegetation" looks like even if the lighting changes. 
-*   **Mechanism**: We extract features from the frozen backbone, creating rich 384-dimensional embeddings for every 14x14 pixel patch of the image.
+## 🧠 Model Architecture: Transformer-Based Semantic Segmentation
 
-### 2. The Decoder: Progressive Semantic Decoder (PSD-Net)
-We replaced the standard U-Net decoder with a **Progressive Upsampling** architecture.
-*   **4-Stage Refinement**: Instead of a single jump, we upsample in stages (14x -> 7x -> 3.5x -> 1x).
-*   **Detail Preservation**: Small neural networks at each stage recover fine details like smooth rock edges and thin branches.
+Rather than training a model from scratch, we adopt a **transfer learning strategy** to leverage pretrained visual representations and improve robustness under domain shifts.
 
-## � Methodology & Training Strategy
+### 1. Backbone: DINOv2 (Vision Transformer)
 
-### 1. Solving the "Class Imbalance" Crisis
-Our initial analysis revealed a massive skew in the dataset: **Sky and Background pixels made up 88% of the data**, while critical obstacles like **Logs and Rocks were less than 0.3%**.
+We use **DINOv2**, a self-supervised Vision Transformer pretrained on large-scale diverse image data.
 
-**The Fix: Square-Root Dampened Weighted Loss**
-In V1, we penalized the model 6.0x for missing logs, which made it unstable. For V3, we switched to a **Square Root Dampening** formula. This reduced the penalty to **~2.5x**, striking a perfect balance between detecting rare objects and maintaining high confidence.
+* The backbone captures high-level semantic structure such as vegetation, terrain texture, and depth cues.
+* Feature extraction is performed using a frozen backbone, producing dense embeddings at a coarse spatial resolution.
 
-### 2. Architecture V3: Progressive Decoding
-We overhauled the architecture to **PSD-Net (Progressive Semantic Decoder)**.
-*   Instead of one giant jump (14x upsample), we now upsample in **4 stages (2x -> 2x -> 2x -> 2x)**.
-*   At each stage, a small neural network refines the boundaries, ensuring jagged rock edges remain sharp.
+This approach significantly reduces training requirements while improving performance on unseen environments.
 
-### 3. Rigid Training Procedure (V3)
-*   **Backbone**: DINOv2 (Frozen) to retain generic world knowledge.
-*   **Augmentation**: We used **RandomCrop** (not just resize) to ensure the model sees high-resolution details.
-*   **Optimization**: AdamW + **ReduceLROnPlateau Scheduler** (adapts learning rate when loss plateaus).
-*   **Duration**: Trained for **15 Epochs** to ensure full convergence.
+### 2. Decoder: Progressive Semantic Decoder (PSD-Net)
 
-## �📊 Performance & Evaluation
+To convert transformer features into dense pixel-level predictions, we design a **Progressive Semantic Decoder**.
 
-We evaluated the model on **1002 Unseen Test Images**. This wasn't just a "it looks good" check—we ran strict pixel-level metrics.
+* Features are upsampled gradually through multiple stages rather than a single large interpolation step.
+* Each stage includes lightweight convolutional refinement blocks to recover spatial details.
+* This progressive decoding improves boundary sharpness for small or thin objects such as rocks, logs, and branches.
+
+## 🔬 Methodology & Training Strategy
+
+### 1. Addressing Class Imbalance
+
+Analysis of the dataset revealed severe class imbalance. Dominant classes such as sky and background account for the majority of pixels, while critical obstacle classes appear very infrequently.
+
+To address this:
+
+* We apply a **class-weighted loss function** with **square-root dampening**.
+* This reduces over-penalization of rare classes while still encouraging correct obstacle detection.
+* The approach stabilizes training and improves overall generalization.
+
+### 2. Progressive Decoder Design
+
+The decoder architecture follows a multi-stage upsampling strategy:
+
+* Spatial resolution is increased incrementally.
+* Feature refinement occurs at each stage, improving semantic consistency and edge quality.
+* This design is especially effective in cluttered off-road scenes with complex terrain boundaries.
+
+### 3. Training Protocol
+
+* **Backbone**: DINOv2 (frozen)
+* **Optimizer**: AdamW
+* **Learning Rate Scheduling**: ReduceLROnPlateau
+* **Augmentation**: Random cropping, flipping, and color jitter to improve robustness
+* **Training Duration**: 15 epochs
+
+The model converges efficiently due to strong pretrained representations.
+
+## 📊 Performance & Evaluation
+
+Model evaluation is performed on a held-out set of **unseen off-road scenes**, simulating deployment in novel environments.
 
 ### Key Metrics
-*   **Mean Pixel Accuracy**: **80.44%** 🎯
-*   **Inference Speed**: ~20ms (Real-time capable)
-*   **Peak Accuracy**: >92% on clear terrain
 
-### Training Dynamics (Model Learning)
-We tracked the model's performance over 5 epochs. The DINOv2 backbone enabled rapid convergence.
-| Loss Curve | IoU Curve |
-|:---:|:---:|
-| ![Loss](Visual_Report/training_curves.png) | ![IoU](Visual_Report/iou_curves.png) |
-| *Validation loss stabilized at 0.50* | *mIoU steadily improved to 0.72* |
+* **Mean Pixel Accuracy**: **80.44%**
+* **Mean IoU**: ~0.72
+* **Inference Time**: ~20 ms per image (real-time capable)
+
+### Training Dynamics
+
+The pretrained transformer backbone enables rapid convergence and stable optimization.
+
+|                 Loss Curve                 |                   IoU Curve                  |
+| :----------------------------------------: | :------------------------------------------: |
+| ![Loss](Visual_Report/training_curves.png) |     ![IoU](Visual_Report/iou_curves.png)     |
+|  *Validation loss stabilizes consistently* | *Steady improvement in segmentation quality* |
 
 ### Quantitative Analysis
-Most models fail when the terrain gets messy. Ours maintains high confidence even in complex scenes.
 
+Performance remains consistent across diverse terrain configurations, with notable improvements in rare obstacle classes.
 
-| Class-Wise Accuracy (IoU) | Test Set Reliability |
-|:---:|:---:|
+|                 Class-Wise Accuracy (IoU)                 |                  Test Set Reliability                 |
+| :-------------------------------------------------------: | :---------------------------------------------------: |
 | ![Class Chart](Visual_Report/class_accuracy_chart_v3.png) | ![Histogram](Visual_Report/accuracy_histogram_v3.png) |
-| *Performance on Rocks/Logs improved significantly* | *Consistent accuracy across 1000+ test images* |
+|           *Improved detection of rocks and logs*          |      *Stable accuracy across 1000+ test samples*      |
 
-### Qualitative Results (What the Robot Sees)
-Below is a direct comparison from our test set. You can see the model (3rd column) successfully identifying the **Trees (Green)** and **Sky (Blue)**, filtering out the noise.
+### Qualitative Results
+
+Below is a qualitative comparison showing the model’s ability to identify terrain categories and obstacles under varying conditions.
 
 ![Performance Summary](Visual_Report/performance_bar_chart.png)
 
 ## 🛠️ Installation & Usage
 
-Want to run this on your own machine? It's plug-and-play.
-
 ### Prerequisites
-*   Python 3.10+
-*   CUDA-enabled GPU (Recommended)
+
+* Python 3.10+
+* CUDA-enabled GPU recommended
 
 ### 1. Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. Run the Live Demo
-We built a GUI tool to let you test individual images and see the metrics in real-time.
+### 2. Run the Interactive Demo
+
+A lightweight GUI is provided for visual inspection of model predictions.
+
 ```bash
 python demo.py
 ```
-*   Press **'O'** to open a file dialog.
-*   Select an image from `Offroad_Segmentation_testImages`.
-*   Watch the model predict!
 
-### 3. Reproducing Scientific Results
-To verify our reported **80.44% Accuracy**, run the evaluation script on the full test set:
+* Press **O** to load an image
+* View segmentation output and metrics in real time
+
+### 3. Reproduce Evaluation Results
+
+To evaluate on the full test set:
+
 ```bash
 python evaluate_test_set.py
 ```
-This will generate `Test_Optimization_Report.txt` with per-image metrics.
 
-### 4. Interpreting the Visuals
-The semantic mask uses specific colors to denote terrain types:
-*   🟢 **Green**: Trees & Forest
-*   🔵 **Blue**: Sky
-*   🟤 **Brown**: Logs & Trunks
-*   ⚫ **Black**: Background/Unknown
-*   🪨 **Gray**: Rocks
-*   🌫️ **Dark Slate**: Distant Landscape
+This generates a detailed report with per-image and aggregate metrics.
 
+### 4. Segmentation Color Legend
+
+* 🟢 Trees / Vegetation
+* 🔵 Sky
+* 🟤 Logs / Trunks
+* ⚫ Background
+* 🪨 Rocks
+* 🌫️ Distant Terrain
 
 ## 📂 Project Structure
-*   `src/model.py`: The DINOv2 + U-Net architecture definition.
-*   `src/train.py`: Training loop with validation and checkpointing.
-*   `src/dataset.py`: Custom PyTorch dataloader for our Off-Road dataset.
-*   `evaluate_test_set.py`: Script used to generate the 80% accuracy report.
-*   `demo.py`: The presentation-ready GUI application.
+
+* `src/model.py`: DINOv2 + Progressive Decoder definition
+* `src/train.py`: Training and validation pipeline
+* `src/dataset.py`: Dataset loader for synthetic off-road scenes
+* `evaluate_test_set.py`: Evaluation script
+* `demo.py`: Interactive visualization tool
 
 ---
-*Built with ❤️ for the Hackathon.*
+
+*Built for off-road autonomy research using synthetic digital twin data.*
+
+---
