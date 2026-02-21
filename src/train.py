@@ -21,7 +21,7 @@ def train_model(epochs=15, batch_size=4, lr=1e-4, device='cuda'):
     input_h, input_w = config["input_size"]
     
     # Paths
-    data_dir = "Offroad_Segmentation_Training_Dataset"
+    data_dir = "/run/media/wolverine/Windows/ML dataset/Offroad_Segmentation_Training_Dataset"
     checkpoint_dir = "checkpoints"
     os.makedirs(checkpoint_dir, exist_ok=True)
 
@@ -55,12 +55,6 @@ def train_model(epochs=15, batch_size=4, lr=1e-4, device='cuda'):
     model = ProgressiveSemanticSegmenter(n_classes=len(CLASS_DEFINITIONS)) 
     model.to(device)
     
-    # Clean Slate Training (No Checkpoint Loading)
-    # checkpoint_path = os.path.join(checkpoint_dir, "best_model.pth")
-    # if os.path.exists(checkpoint_path):
-    #     print(f">> Loading existing checkpoint from {checkpoint_path} for fine-tuning...")
-    #     model.load_state_dict(torch.load(checkpoint_path, map_location=device))
-
     # Optimization
     # Calculated Inverse Frequency Weights to handle class imbalance
     # [Background, Trees, Lush Bushes, Dry Grass, Dry Bushes, Ground Clutter, Logs, Rocks, Landscape, Sky]

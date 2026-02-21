@@ -14,8 +14,8 @@ class DualityDataset(Dataset):
         
         # Structure: root_dir/train/Color_Images/*.jpg
         self.split_dir = os.path.join(self.root_dir, split)
-        self.images_dir = os.path.join(self.split_dir, "Color_Images")
-        self.masks_dir = os.path.join(self.split_dir, "Segmentation")
+        self.images_dir = os.path.join(self.split_dir, "rgb")
+        self.masks_dir = os.path.join(self.split_dir, "seg")
         
         if not os.path.exists(self.images_dir):
             raise FileNotFoundError(f"Missing images at: {self.images_dir}")
