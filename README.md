@@ -1,8 +1,7 @@
 
-
 # CODEZEN 2.0 – Hackathon Submission
 
-## Team Information
+## 🏆 Team Information
 
 **Team Name:** ORCA
 **Project:** Offroad Semantic Scene Segmentation
@@ -10,96 +9,100 @@
 
 ---
 
-# Project Overview
+# 🌵 Project Overview
 
-This project implements a **hybrid Transformer–CNN semantic segmentation architecture** designed for off-road desert environments using synthetic data from Duality AI's Falcon platform.
+This project implements a **hybrid Transformer–CNN semantic segmentation architecture** tailored for off-road desert environments using synthetic data from Duality AI's Falcon platform.
 
-Instead of a conventional U-Net, we deploy a **DINOv2 Transformer backbone fused with a convolutional feature pyramid neck**, enabling:
+Instead of a conventional U-Net, we design a **DINOv2-based transformer backbone fused with a convolutional feature pyramid neck**, enabling:
 
-* Strong global semantic understanding (Transformer)
-* Local spatial refinement (CNN neck)
-* Improved small-object sensitivity
+* Global semantic reasoning (Transformer attention)
+* Local spatial refinement (CNN inductive bias)
 * Multi-scale dense prediction
+* Improved small-object sensitivity
+* Real-time inference performance
 
 ---
 
-# 🚀 Key Innovations
-
-* ✅ **DINOv2 Vision Transformer backbone** (self-supervised representation learning)
-* ✅ **Multi-depth feature extraction**
-* ✅ **Lightweight CNN Feature Pyramid Neck**
-* ✅ **Multi-scale segmentation heads**
-* ✅ **Walkability-aware visualization**
-* ✅ **Efficient GPU inference (<5ms per image)**
-
----
-
-# Architecture Overview
+# 🏗 Architecture Overview
 
 ## Hybrid Transformer–CNN Segmentation Model
 
-### 1️⃣ Backbone – DINOv2 (ViT-Based)
-
-* Input: 512×512 crop
-* Patch size: 14
-* Token grid: 36×36
-* Intermediate block features extracted
-* Global contextual attention
-
-DINOv2 provides:
-
-* Robust semantic embeddings
-* Strong domain generalization
-* Dense patch-level representations
+<p align="center">
+  <img src="docs/model_architecture.jpeg" alt="Model Architecture" width="900"/>
+</p>
 
 ---
 
-### 2️⃣ Multi-Depth Feature Extraction
+## 1️⃣ Backbone – DINOv2 (Vision Transformer)
 
-Instead of using only the final transformer block, we extract features from multiple depths:
+* **Input:** 512×512 crop
+* **Patch size:** 14
+* **Token grid:** 36×36
+* **Multi-depth feature extraction**
+* **Global self-attention**
 
-* Early block → local texture features
-* Mid block → object-level abstraction
-* Final block → global semantics
+DINOv2 provides:
 
-All reshaped to spatial feature maps:
+* Self-supervised large-scale pretraining
+* Robust semantic embeddings
+* Strong generalization across domains
+* Dense patch-level feature representations
+
+---
+
+## 2️⃣ Multi-Depth Feature Extraction
+
+Instead of using only the final transformer block, features are extracted from multiple depths:
+
+* Early block → texture & edge features
+* Middle block → object-level abstraction
+* Final block → global semantic reasoning
+
+All outputs are reshaped to spatial feature maps:
 
 ```
 [B, C, 36, 36]
 ```
 
----
-
-### 3️⃣ CNN Feature Pyramid Neck
-
-Since Vision Transformers do not provide spatial hierarchy natively, we construct a pyramid manually:
-
-From 36×36 base feature:
-
-* P2 → 72×72 (upsampled)
-* P3 → 36×36 (base)
-* P4 → 18×18 (downsampled)
-* P5 → 9×9 (downsampled)
-
-This restores spatial inductive bias and improves small-object recall.
+This enables semantic hierarchy without changing spatial resolution.
 
 ---
 
-### 4️⃣ Multi-Scale Segmentation Heads
+## 3️⃣ CNN Feature Pyramid Neck
 
-Each pyramid level produces logits.
+Vision Transformers do not natively provide spatial pyramids.
+We manually construct a hierarchical pyramid from the 36×36 feature map:
 
-Deep supervision is applied at multiple scales to:
+* **P2 → 72×72** (upsampled)
+* **P3 → 36×36** (base)
+* **P4 → 18×18** (downsampled)
+* **P5 → 9×9** (downsampled)
 
-* Improve gradient flow
-* Enhance rare-class learning
-* Reduce semantic over-smoothing
+This:
 
-Final output is fused and upsampled to full resolution.
+* Restores spatial inductive bias
+* Improves small-object recall
+* Enhances boundary precision
+* Enables deep supervision at multiple scales
 
 ---
 
-# Dataset & Classes
+## 4️⃣ Multi-Scale Segmentation Heads
+
+Each pyramid level produces logits with deep supervision applied at multiple scales.
+
+This improves:
+
+* Gradient flow
+* Rare-class learning
+* Stability of transformer training
+* Reduction of semantic over-smoothing
+
+Final predictions are fused and upsampled to full resolution.
+
+---
+
+# 🌍 Dataset & Semantic Classes
 
 The model segments 10 primary semantic classes:
 
@@ -112,17 +115,17 @@ The model segments 10 primary semantic classes:
 | 550   | Ground Clutter | Walkable terrain / debris |
 | 600   | Flowers        | Flowering plants          |
 | 700   | Logs           | Fallen trees              |
-| 800   | Rocks          | Stones/boulders           |
-| 7100  | Landscape      | General terrain           |
+| 800   | Rocks          | Stones / boulders         |
+| 7100  | Landscape      | General terrain surface   |
 | 10000 | Sky            | Sky regions               |
 
-**Ground Clutter** is emphasized in visualization as a high-contrast red to highlight walkable path regions.
+**Ground Clutter** is highlighted in red during visualization to emphasize walkable path regions.
 
 ---
 
-# Training Configuration
+# ⚙ Training Configuration
 
-### Hyperparameters
+## Hyperparameters
 
 * **Input Size:** 512×512 crop
 * **Batch Size:** 8
@@ -131,26 +134,29 @@ The model segments 10 primary semantic classes:
 * **Learning Rate:** 1e-4
 * **Weight Decay:** 1e-4
 
-### Loss Function
+---
 
-Compound loss:
+## Loss Function
+
+Compound loss function:
 
 ```
 Total Loss =
     CrossEntropy
   + Dice Loss
-  + Focal Loss (rare-class emphasis)
+  + Focal Loss
 ```
 
-This improves:
+This combination improves:
 
 * Class imbalance handling
-* Boundary precision
-* Small-object detection
+* Boundary sharpness
+* Rare-class recovery
+* Small-object segmentation
 
 ---
 
-# Data Augmentation
+# 🔄 Data Augmentation
 
 ```python
 A.Compose([
@@ -163,30 +169,33 @@ A.Compose([
 ])
 ```
 
-This preserves scene context while maintaining transformer token density.
+This preserves scene context while maintaining effective transformer token density.
 
 ---
 
-# Performance Metrics
+# 📊 Evaluation Metrics
 
-### Primary Metric
+## Primary Metric
 
-**Mean IoU (mIoU)**
+**Mean Intersection over Union (mIoU)**
 
 ```
 IoU = Intersection / Union
 ```
 
-### Additional Metrics
+---
+
+## Additional Metrics
 
 * Pixel Accuracy
 * Per-Class IoU
 * Precision / Recall / F1
+* Confusion Matrix
 * Latency (ms per image)
 
 ---
 
-# Performance Summary (Example)
+# 📈 Performance Summary (Representative)
 
 | Metric            | Value      |
 | ----------------- | ---------- |
@@ -195,11 +204,11 @@ IoU = Intersection / Union
 | Inference Latency | ~4.7 ms    |
 | Throughput        | ~200 FPS   |
 
-Transformer backbone improves global consistency, while CNN neck enhances fine-detail segmentation.
+The transformer backbone improves global consistency, while the CNN neck enhances fine-detail segmentation.
 
 ---
 
-# Running the Model
+# 🚀 Running the Model
 
 ## Train
 
@@ -213,60 +222,50 @@ python train.py
 python test.py
 ```
 
-## Visualize
+## Visualize Predictions
 
 ```bash
 python visualize_segmentation.py
 ```
 
-Outputs:
+Outputs include:
 
-* Predicted masks
+* Predicted segmentation masks
 * Confusion matrix
-* Per-class IoU charts
-* Visual comparison panels
+* Per-class IoU plots
+* Input vs Ground Truth vs Prediction comparisons
 
 ---
 
-# Why This Architecture Matters
+# 🧠 Why This Architecture Matters
 
-Traditional U-Net:
+### Traditional U-Net
 
 * Strong locality
 * Limited global reasoning
 
-Pure Transformer:
+### Pure Transformer
 
 * Strong global context
 * Weak spatial hierarchy
 
-Our fusion model:
+### Our Hybrid Model
 
-* Combines global attention with local convolutional refinement
-* Enables rare-class sensitivity
-* Maintains real-time inference
+* Global semantic attention
+* Local convolutional refinement
+* Multi-scale supervision
+* Rare-class sensitivity
+* Real-time deployment capability
 
 ---
 
-# Technical Contribution
+# 🔬 Technical Contribution
 
 This project demonstrates:
 
 * Practical integration of self-supervised ViT backbones
-* Manual spatial pyramid construction for transformer-based segmentation
-* Hybrid architecture design for terrain-aware perception
-* Efficient deployment-ready performance
+* Manual spatial pyramid construction for transformer segmentation
+* Hybrid architectural fusion for terrain perception
+* Efficient GPU deployment-ready inference
 
 ---
-
-# Future Work
-
-* Boundary-aware supervision
-* Walkability multi-task head
-* Adaptive resolution inference
-* Uncertainty-aware refinement
-* Domain adaptation to real-world off-road imagery
-
----
-
-
