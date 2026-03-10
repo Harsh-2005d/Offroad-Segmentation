@@ -1,10 +1,9 @@
 import json
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 import os
 
-JSON_PATH = "./runs/evaluation.json"   # <-- change to your file
+JSON_PATH = "./segmentation/runs/evaluation.json"   # <-- change to your file
 OUTPUT_DIR = "plots"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -65,13 +64,13 @@ plot_bar(f1_vals, "Per-Class F1 Score", "f1.png", "purple")
 # ======================================================
 
 plt.figure(figsize=(12, 10))
-sns.heatmap(
-    confusion_matrix,
-    xticklabels=class_names,
-    yticklabels=class_names,
-    cmap="viridis",
-    norm=None
-)
+# sns.heatmap(
+#     confusion_matrix,
+#     xticklabels=class_names,
+#     yticklabels=class_names,
+#     cmap="viridis",
+#     norm=None
+# )
 
 plt.title("Confusion Matrix")
 plt.xlabel("Predicted")

@@ -1,5 +1,5 @@
 
-# CODEZEN 2.0 – Hackathon Submission
+# Xen-o-thon – Hackathon Submission
 
 ## 🏆 Team Information
 
