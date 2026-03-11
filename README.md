@@ -5,7 +5,6 @@
 
 **Team Name:** ORCA
 **Project:** Offroad Semantic Scene Segmentation
-**Challenge:** Duality AI Code Sprint Hackathon
 
 ---
 
