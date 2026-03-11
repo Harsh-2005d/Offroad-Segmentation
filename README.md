@@ -1,5 +1,5 @@
 
-# Xen-o-thon – Hackathon Submission
+# Hackathon Submission
 
 ## 🏆 Team Information
 
@@ -268,3 +268,4 @@ This project demonstrates:
 * Efficient GPU deployment-ready inference
 
 ---
+
