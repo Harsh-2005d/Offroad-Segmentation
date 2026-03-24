@@ -8,6 +8,8 @@
 
 ---
 
+## [PERFORMANCE REPORT](PERFORMANCE_REPORT.docx) 
+
 # 🌵 Project Overview
 
 This project implements a **hybrid Transformer–CNN semantic segmentation architecture** tailored for off-road desert environments using synthetic data from Duality AI's Falcon platform.
