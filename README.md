@@ -1,5 +1,5 @@
 
-# Hackathon Submission
+# AIʼs Offroad Semantic Scene Segmentation
 
 ## 🏆 Team Information
 
